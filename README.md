@@ -1,4 +1,4 @@
-Demo App: Step Form with timer
+Demo App: Step Form With Timer
 =====
 
 Installation
