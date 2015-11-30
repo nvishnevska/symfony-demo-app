@@ -1,0 +1,71 @@
+.message {
+	padding: 15px;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.message-error {
+	color: tomato;
+	border: 1px solid tomato;
+}
+
+.message-feedback {
+	color: green;
+	border: 1px solid green;
+}
+
+
+.step-form, .message {
+	max-width: 600px;
+}
+
+.form-title {
+	margin-bottom: 30px;
+}
+
+.step-form-buttons {
+	margin-top: 20px;
+}
+
+
+
+.timer {
+	color: tomato;
+	text-align: right;
+}
+
+
+
+
+/* Stick footer to the bottom */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+#page-wrap {
+  min-height: 100%;
+  /* equal to footer height */
+  margin-bottom: -130px; 
+}
+#page-wrap:after {
+  content: "";
+  display: block;
+  height: 130px;
+}
+footer {
+  height: 100px; 
+}
+
+
+footer {
+	background: #ecf0f1;
+	margin-top: 30px;
+	padding-top: 2em;
+	padding-bottom: 2em;
+}
+
+footer p {
+	color: #7b8a8b;
+    font-size: 13px;
+    margin-bottom: 0.25em;
+}

@@ -1,0 +1,210 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <form action="{{ path('_apiAddNewEmployee') }}" method="POST" name="addnewEmployeeForm" id="addnewEmployeeForm" class="step-form">
+      <div class="row">
+        <div class="col-sm-8">
+          <h4 class="form-title">Додати нового працівника</h4>    
+        </div>
+        <div class="col-sm-4">
+          <h4 class="timer" id="timer"></h4>
+        </div>
+      </div>
+      
+
+      
+      <section id="FormSection-1" style="display: block;">
+        <div class="form-group">
+          <label for="last_name">Прізвище</label>
+          <input type="text" class="form-control" id="last_name" name="last_name">
+        </div>
+
+        <div class="form-group">
+          <label for="first_name">Ім'я</label>
+          <input type="text" class="form-control" id="first_name" name="first_name">
+        </div>
+
+        <div class="form-group">
+          <label for="middle_name">По батькові</label>
+          <input type="text" class="form-control" id="middle_name" name="middle_name">
+        </div>
+
+        <div class="form-group">
+          <label for="bdate">Дата народження</label>
+          <input type="date" class="form-control" id="bdate" name="bdate">
+        </div>
+      </section>
+
+
+
+      <section id="FormSection-2" style="display: none;">
+        <div class="form-group">
+          <label for="address">Адреса</label>
+          <input type="text" class="form-control" id="address" name="address">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Телефон</label>
+          <input type="text" class="form-control" id="phone" name="phone">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="text" class="form-control" id="email" name="email">
+        </div>
+      </section>
+
+
+
+      <section id="FormSection-3" style="display: none;">
+        <div class="form-group">
+          <label for="bio">Коротка біографія</label>
+          <textarea class="form-control" id="bio" name="bio" rows="9"></textarea> 
+        </div>
+      </section>
+
+
+
+      <div class="row step-form-buttons">
+        <div class="col-sm-6">
+          <button class="btn btn-default" id="step-form-goback" disabled="disabled">&lt; Назад</button>
+        </div>
+        <div class="col-sm-6 text-right">
+          <button class="btn btn-default" id="step-form-goforward">Вперед &gt;</button>
+          <input type="submit" class="btn btn-primary" name="submit" id="step-form-submit" value="Зберегти" style="display: none;">
+        </div>
+      </div>
+
+    </form>
+{% endblock %}
+
+
+{% block javascripts %}
+    <script type="text/javascript">
+      var step_form_id = "addnewEmployeeForm";
+      var step_form_section_prefix = "FormSection-";
+      var step_form_current_page = 1;
+      var step_form_num_pages = $('#' + step_form_id + ' section[id^="' + step_form_section_prefix + '"]').length;
+
+      var step_form_timer_init_value = {{ time_left }};
+      var step_form_timer_current_value = step_form_timer_init_value;
+
+      const MSG_ERR_TOO_LATE = "Нажаль час, відведений на заповнення форми, вийшов";
+
+      function StepFormGoPage(page){
+        for (i=1; i<=step_form_num_pages; i++){
+          var el = $('#' + step_form_id + ' #' + step_form_section_prefix + i);
+          if (i != page)
+            el.hide();
+          else
+            el.show();
+        }
+        step_form_current_page = page;
+
+        // if first page - disable go prev button
+        // else make sure not disabled
+        if (step_form_current_page == 1)
+          $('#step-form-goback').prop('disabled', "disabled");
+        else
+          $('#step-form-goback').prop('disabled', "");
+
+
+        // if last page - show submit button, hide next btn
+        // else make sure vice versa
+        if (step_form_current_page == step_form_num_pages) {
+          $('#step-form-goforward').hide();
+          $('#step-form-submit').show();
+        } else {
+          $('#step-form-goforward').show();
+          $('#step-form-submit').hide();
+        }
+      }
+
+
+
+      $(document).ready(function(){
+          $('#step-form-goback').click(function(){
+            if (step_form_current_page == 1)
+              return false;
+
+            StepFormGoPage(step_form_current_page - 1);
+            return false;
+          });
+
+          $('#step-form-goforward').click(function(){
+            if (step_form_current_page == step_form_num_pages)
+              return false;
+
+            StepFormGoPage(step_form_current_page + 1);
+            return false;
+          });
+
+          // timer
+          var timerId = setInterval(function(){
+            if (step_form_timer_current_value < 1) {
+              // if init val = 0, then page already have this message from server
+              if (step_form_timer_init_value != 0)
+                $('#message-error').append("<div>" + MSG_ERR_TOO_LATE + "</div>");
+
+              $('#message-error').show();
+              // stop timer
+              clearInterval(timerId);
+              return false;
+            }
+            step_form_timer_current_value -= 1;
+            // update timer widget
+            var minutes = '' + Math.floor(step_form_timer_current_value / 60);
+            var seconds = '' + (step_form_timer_current_value - minutes*60);
+            minutes = (minutes.length == 1) ? '0' + minutes : minutes;
+            seconds = (seconds.length == 1) ? '0' + seconds : seconds;
+            
+            $('#timer').html('' + minutes + ':' + seconds);
+          }, 1000);
+
+          // Attach submit handler, submit using AJAX, prevent default submit
+          $('#addnewEmployeeForm').submit(function( event ){
+            
+            // Stop from submitting normally
+            event.preventDefault();
+
+            // gather values
+            var obj = {};
+            $('#addnewEmployeeForm input,#addnewEmployeeForm textarea').each(function(){
+                var name = $(this).prop('name');
+                obj[name] = $(this).val();
+            });
+            console.log(obj);
+
+            // post them to the server
+            $.ajax({
+                type: "POST",
+                url: "{{ path('_apiAddNewEmployee') }}",
+                data: obj,
+                error: function(jqXHR, status){
+                    $('#message-error').append("<div>Неможливо відправити дані на сервер. Код відповіді: " + status + "</div>");
+                    
+                },
+                success: function(data){
+                    if (data.code == 0) {
+                        $('#message-feedback').append("<div>Успішно виконано</div>");
+                        $('#message-feedback').show();
+                        
+                        // cleanup form for new data
+                        $('#addnewEmployeeForm input,#addnewEmployeeForm textarea').each(function(){
+                            if ($(this).prop('type') != 'submit')
+                                $(this).val('');
+                        });
+
+                        // goto 1 page
+                        StepFormGoPage(1);
+                    } else {
+                        $('#message-error').append("<div>" + data.message + "</div>");
+                    }
+
+                },
+            });
+          });
+
+      });
+    </script>
+{% endblock %}
